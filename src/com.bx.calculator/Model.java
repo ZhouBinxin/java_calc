@@ -193,8 +193,8 @@ public class Model {
 
     // 建立数据库连接
     private void establishDatabaseConnection() {
-        String url = "jdbc:mysql://localhost:3306/calc"; // 替换为你的数据库URL
-        String username = "root"; // 替换为你的数据库用户名
+        String url = "jdbc:mysql://154.204.178.96:3306"; // 替换为你的数据库URL
+        String username = "bx"; // 替换为你的数据库用户名
         String password = "123456"; // 替换为你的数据库密码
 
         try {
@@ -220,7 +220,7 @@ public class Model {
     // 从文件加载用户数据
     private void loadUsers() {
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM users")) {
+             ResultSet resultSet = statement.executeQuery("SELECT * FROM calc_users")) {
 
             while (resultSet.next()) {
                 String username = resultSet.getString("username");
