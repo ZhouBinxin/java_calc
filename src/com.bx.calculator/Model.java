@@ -193,12 +193,25 @@ public class Model {
 
     // 建立数据库连接
     private void establishDatabaseConnection() {
-        String url = "jdbc:mysql://154.204.178.96:3306"; // 替换为你的数据库URL
+        String url = "jdbc:mysql://154.204.178.96:3306/calc"; // 替换为你的数据库URL
         String username = "bx"; // 替换为你的数据库用户名
         String password = "123456"; // 替换为你的数据库密码
 
         try {
             connection = DriverManager.getConnection(url, username, password);
+            createUsersTable(); // 检查并创建用户表
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 检查并创建用户表
+    private void createUsersTable() {
+        try (Statement statement = connection.createStatement()) {
+            String createTableQuery = "CREATE TABLE IF NOT EXISTS users (" +
+                    "username VARCHAR(50) PRIMARY KEY," +
+                    "password VARCHAR(50))";
+            statement.executeUpdate(createTableQuery);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -220,7 +233,7 @@ public class Model {
     // 从文件加载用户数据
     private void loadUsers() {
         try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM calc_users")) {
+             ResultSet resultSet = statement.executeQuery("SELECT * FROM users")) {
 
             while (resultSet.next()) {
                 String username = resultSet.getString("username");
