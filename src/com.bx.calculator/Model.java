@@ -4,7 +4,9 @@ import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.time.LocalDateTime;
-
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 public class Model {
     private User currentUser;   // 当前用户
@@ -15,19 +17,7 @@ public class Model {
         users = new HashMap<>();    // 初始化用户列表
         establishDatabaseConnection(); // 建立数据库连接
         loadUsers();    // 加载用户数据
-    }
-
-    // 计算表达式
-    // 计算表达式
-    public String calculateExpression(String inputText) {
-        try {
-            String expression = preprocessInput(inputText);
-            double result = calculate(expression);
-            saveCalculation(inputText + " = " + result);
-            return String.valueOf(result);
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
-        }
+        createCalculationsTable();
     }
 
     private static String preprocessInput(String inputText) {
@@ -217,6 +207,7 @@ public class Model {
         }
     }
 
+
     // 保存用用户数据
     private void saveUsers() {
         try (PreparedStatement statement = connection.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)")) {
@@ -254,21 +245,45 @@ public class Model {
         return path;
     }
 
-    // 保存计算历史到文件
-    private void saveCalculation(String calculation) {
-        String path = getHistoryFilePath();
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path, true))) {
-            // 获取当前日期和时间
-            LocalDateTime now = LocalDateTime.now();
+    // 保存运算记录到数据库
+    private void saveCalculationToDatabase(String expression, double result) {
+        if (currentUser != null) {
+            String insertQuery = "INSERT INTO calculations (username, expression, result, timestamp) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(insertQuery)) {
+                statement.setString(1, currentUser.getUsername());
+                statement.setString(2, expression);
+                statement.setDouble(3, result);
+                statement.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-            // 提取月份、日和小时
-            int month = now.getMonthValue();
-            int day = now.getDayOfMonth();
-            int hour = now.getHour();
+    // 计算表达式
+    public String calculateExpression(String inputText) {
+        try {
+            String expression = preprocessInput(inputText);
+            double result = calculate(expression);
+            saveCalculationToDatabase(inputText, result); // 保存计算历史到数据库
+            return String.valueOf(result);
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
 
-            bw.write(month + "月" + day + "日" + hour + "时  " + calculation);
-            bw.newLine();
-        } catch (IOException e) {
+    // 检查并创建运算记录表
+    private void createCalculationsTable() {
+        try (Statement statement = connection.createStatement()) {
+            String createTableQuery = "CREATE TABLE IF NOT EXISTS calculations (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "username VARCHAR(50) NOT NULL," +
+                    "expression VARCHAR(255) NOT NULL," +
+                    "result DOUBLE NOT NULL," +
+                    "timestamp TIMESTAMP NOT NULL)";
+            statement.executeUpdate(createTableQuery);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -307,7 +322,7 @@ public class Model {
         try {
             int decimal = Integer.parseInt(inputText);
             String result = inputText + " 的二进制为: " + Integer.toBinaryString(decimal);
-            saveCalculation(result);
+            saveCalculationToDatabase(inputText+"的二进制",decimal);
             return result;
         } catch (NumberFormatException ex) {
             return "错误的输入";
@@ -319,7 +334,7 @@ public class Model {
         try {
             int decimal = Integer.parseInt(inputText, 2);
             String result = inputText + " 的十进制为: " + decimal;
-            saveCalculation(result);
+            saveCalculationToDatabase(inputText+"的十进制",decimal);
             return result;
         } catch (NumberFormatException ex) {
             return "错误的输入";
