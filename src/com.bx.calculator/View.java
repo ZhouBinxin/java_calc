@@ -9,7 +9,7 @@ public class View extends JFrame {
     private final JLabel resultLabel;   // 结果标签
 
     public View() {
-        setTitle("智能计算器");  // 设置标题
+        setTitle("计算器Pro");  // 设置标题
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setSize(400, 500);
@@ -116,7 +116,7 @@ public class View extends JFrame {
             case 1 -> displayCancelDialog();
             case 2 -> {
                 Controller.logout();
-                setTitle("智能计算器");
+                setTitle("计算器Pro");
             }
         }
     }
@@ -133,7 +133,7 @@ public class View extends JFrame {
             case 2 -> displayCancelDialog();
             case 3 -> {
                 Controller.logout();
-                setTitle("智能计算器");
+                setTitle("计算器Pro");
             }
         }
     }

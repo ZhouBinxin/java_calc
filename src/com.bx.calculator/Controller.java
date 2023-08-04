@@ -58,7 +58,7 @@ public class Controller {
     public static void login(String username, String password) {
         User user = model.loginUser(username, password);
         if (user != null) {
-            view.setTitle("智能计算器 - " + user.getUsername()); // 设置视图的标题，显示当前用户的用户名
+            view.setTitle("计算器Pro - " + user.getUsername()); // 设置视图的标题，显示当前用户的用户名
         } else {
             JOptionPane.showMessageDialog(view, "登录失败！请检查用户名和密码。", "登录失败", JOptionPane.ERROR_MESSAGE); // 显示登录失败的错误消息框
         }
@@ -77,7 +77,7 @@ public class Controller {
 
     // 退出方法，清除当前用户信息
     public static void logout() {
-        view.setTitle("智能计算器"); // 设置视图的标题为默认标题
+        view.setTitle("计算器Pro"); // 设置视图的标题为默认标题
         model.logout(); // 清除当前用户信息
     }
 
