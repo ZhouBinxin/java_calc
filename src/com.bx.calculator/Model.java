@@ -148,26 +148,29 @@ public class Model {
         } else {
             User user = new User(username, password);
             users.put(username, user);
-            saveUsers();
+            saveUsers(); // 保存用户数据到数据库
         }
     }
 
     public void deleteUser() {
         if (currentUser != null) {
-            File historyFile = new File(getHistoryFilePath());
-            if (historyFile.exists()) {
-                if (historyFile.delete()) {
-                    System.out.println("历史记录文件已成功删除");
+            String usernameToDelete = currentUser.getUsername();
+
+            try (PreparedStatement deleteUserStatement = connection.prepareStatement("DELETE FROM users WHERE username = ?")) {
+                deleteUserStatement.setString(1, usernameToDelete);
+                int deletedRows = deleteUserStatement.executeUpdate();
+
+                if (deletedRows > 0) {
+                    System.out.println("用户删除成功");
                 } else {
-                    System.out.println("无法删除历史记录文件");
+                    System.out.println("用户删除失败");
                 }
-            } else {
-                System.out.println("历史记录文件不存在");
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
 
-            users.remove(currentUser.getUsername());
-            saveUsers();
-            loadUsers();
+            currentUser = null;
+            users.remove(usernameToDelete);
         }
     }
 
@@ -199,7 +202,8 @@ public class Model {
     private void createUsersTable() {
         try (Statement statement = connection.createStatement()) {
             String createTableQuery = "CREATE TABLE IF NOT EXISTS users (" +
-                    "username VARCHAR(50) PRIMARY KEY," +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," + // 添加自增长的id字段
+                    "username VARCHAR(50) NOT NULL," +
                     "password VARCHAR(50))";
             statement.executeUpdate(createTableQuery);
         } catch (SQLException e) {
