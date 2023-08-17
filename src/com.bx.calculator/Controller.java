@@ -77,7 +77,7 @@ public class Controller {
 
     // 退出方法，清除当前用户信息
     public static void logout() {
-        view.setTitle("计算器Pro"); // 设置视图的标题为默认标题
+        view.setTitle("计算器 Pro"); // 设置视图的标题为默认标题
         model.logout(); // 清除当前用户信息
     }
 
